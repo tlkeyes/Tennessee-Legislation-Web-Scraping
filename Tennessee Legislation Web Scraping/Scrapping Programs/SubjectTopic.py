@@ -9,43 +9,57 @@ import pandas as pd
 #   2 - fetch all house and senate bill information
 #   3 - parse the html from pageRespose
 #############################################################
-testLink = "http://wapp.capitol.tn.gov/apps/subjectindex/BillsBySubject.aspx?Primarysubject=2170&GA=109"
 
-def subjectTopicData(pagelink, subject = 'HealthCare'):   
-    pageResponse = requests.get(pagelink, timeout = 15)
-   
-    soup = BeautifulSoup(pageResponse.content, 'html.parser')
+info = {
+    "Bill Link": [] ,
+    "Bill Number": [], 
+    "Bill Session": [],
+    "Composite Abstract": [], 
+    "Last Action": [], 
+    "Date": [] 
+}
 
-    #############################################################
-    #   STEPS TO COLLECT DATA
-    #   1 - Identify table that contains desired data
-    #   2 - Assign table columns to variables
-    #   3 - Create list comprehensions for each variable
-    #   4 - Drop list comprehensions into DataFrame
-    #############################################################
-    billTable = soup.find('label', {'id':'generatedcontent'})
+def firstItem(item):
+    position = item.get_text().find(" ")
+    return(item.get_text()[:position].strip(" "))
 
-    linkCell = billTable.find_all('td', attrs={"width":"10%", "valign":"TOP"})
-    numberCell = billTable.find_all('td', attrs={"width":"10%", "valign":"TOP"})
-    summaryCell = billTable.find_all('td', attrs={"width":"45%","valign":"top"})
-    lastActionCell = billTable.find_all('td', attrs={"width":"35%", "valign":"top"})
-    dateCell = billTable.find_all('td', attrs={"width":"10%", "valign":"top"})
+def collectBills(maxSession):
+    for j in range(99,(maxSession)):
+        pageLink = f"http://wapp.capitol.tn.gov/apps/subjectindex/BillsBySubject.aspx?Primarysubject=2170&GA={j}"
+        
+        # fetch all house and senate bill information
+        pageResponse = requests.get(pageLink, timeout=15)
 
-    link = [bl.find('a').get('href').strip(" ") for bl in linkCell]
-    billNumber = [bn.find('a').get_text() for bn in numberCell]
-    summary = [s.get_text().strip(" ") for s in summaryCell]
-    lastAction = [la.get_text().strip(" ") for la in lastActionCell]
-    date = [firstItem(d) for d in dateCell]
+        # parse html
+        soup = BeautifulSoup(pageResponse.content, 'html.parser')
+        
+        # find part of page that has the table inside of it
+        allBills = soup.find('label', {'id':'generatedcontent'})
 
-    information = pd.DataFrame({
-        "Bill Link": link, 
-        "Bill Number": billNumber,
-        "Subject": subject,
-        "Composite Abstract": summary,
-        "Last Action": lastAction,
-        "Date": date
-        })
-    
-    information.to_csv('information.csv')
-
-subjectTopicData(pagelink=testLink)
+        # in general, there are (4) columns that we are interested in. 
+        # assign the column data, by cell
+        billLinkCell = allBills.find_all('td', attrs={"width":"10%", "valign":"TOP"})
+        billNumberCell = allBills.find_all('td', attrs={"width":"10%", "valign":"TOP"})
+        summaryCell = allBills.find_all('td', attrs={"width":"45%","valign":"top"})
+        lastActionCell = allBills.find_all('td', attrs={"width":"35%", "valign":"top"})
+        dateCell = allBills.find_all('td', attrs={"width":"10%", "valign":"top"})
+        
+        #info["Bill Link"].append([bl.find('a').get('href').strip(" ") for bl in billLinkCell])
+        
+        billLink = [bl.find('a').get('href').strip(" ") for bl in billLinkCell]
+        billNumber = [bn.find('a').get_text() for bn in billNumberCell]
+        compositeAbstract = [s.get_text().strip(" ") for s in summaryCell]
+        lastAction = [la.get_text().strip(" ") for la in lastActionCell]
+        date = [firstItem(d) for d in dateCell]
+        
+        for item in billLink:
+            info["Bill Link"].append(item)
+        for item in billNumber:
+            info["Bill Number"].append(item)
+        for item in compositeAbstract:
+            info["Composite Abstract"].append(item)
+        for item in lastAction:
+            info["Last Action"].append(item)
+        for item in date:
+            info["Date"].append(item)
+            info["Bill Session"].append(j)
