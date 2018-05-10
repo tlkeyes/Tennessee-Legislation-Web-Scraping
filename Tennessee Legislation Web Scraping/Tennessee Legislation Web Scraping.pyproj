@@ -4,7 +4,8 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>e750cc7d-6bdc-4008-b046-fc63d8c86f75</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>Scrapping Programs\SubjectTopic.py</StartupFile>
+    <StartupFile>
+    </StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -22,10 +23,6 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Scrapping Programs\helperFunctions.py">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Scrapping Programs\SubjectTopic.py" />
     <Compile Include="Scrapping Programs\voteData.py">
       <SubType>Code</SubType>
     </Compile>
